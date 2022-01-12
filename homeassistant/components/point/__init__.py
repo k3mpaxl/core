@@ -13,16 +13,19 @@ from homeassistant.const import (
     CONF_CLIENT_SECRET,
     CONF_TOKEN,
     CONF_WEBHOOK_ID,
+    Platform,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
 from homeassistant.helpers.entity import DeviceInfo, Entity
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.util.dt import as_local, parse_datetime, utc_from_timestamp
 
 from . import config_flow
@@ -41,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 DATA_CONFIG_ENTRY_LOCK = "point_config_entry_lock"
 CONFIG_ENTRY_IS_SETUP = "point_config_entry_is_setup"
 
-PLATFORMS = ["binary_sensor", "sensor"]
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -56,7 +59,7 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
-async def async_setup(hass, config):
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Minut Point component."""
     if DOMAIN not in config:
         return True
@@ -86,7 +89,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
     session = PointSession(
-        hass.helpers.aiohttp_client.async_get_clientsession(),
+        async_get_clientsession(hass),
         entry.data["refresh_args"][CONF_CLIENT_ID],
         entry.data["refresh_args"][CONF_CLIENT_SECRET],
         token=entry.data[CONF_TOKEN],

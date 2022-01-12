@@ -10,7 +10,7 @@ import logging
 import mimetypes
 import os
 import re
-from typing import Optional, Tuple, cast
+from typing import Optional, cast
 
 from aiohttp import web
 import mutagen
@@ -32,7 +32,7 @@ from homeassistant.const import (
     CONF_PLATFORM,
     PLATFORM_FORMAT,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_per_platform, discovery
 import homeassistant.helpers.config_validation as cv
@@ -46,7 +46,7 @@ from homeassistant.util.yaml import load_yaml
 
 _LOGGER = logging.getLogger(__name__)
 
-TtsAudioType = Tuple[Optional[str], Optional[bytes]]
+TtsAudioType = tuple[Optional[str], Optional[bytes]]
 
 ATTR_CACHE = "cache"
 ATTR_LANGUAGE = "language"
@@ -172,7 +172,7 @@ async def async_setup(hass, config):
             _LOGGER.exception("Error setting up platform: %s", p_type)
             return
 
-        async def async_say_handle(service):
+        async def async_say_handle(service: ServiceCall) -> None:
             """Service handle for say."""
             entity_ids = service.data[ATTR_ENTITY_ID]
             message = service.data.get(ATTR_MESSAGE)
@@ -232,7 +232,7 @@ async def async_setup(hass, config):
 
     discovery.async_listen_platform(hass, DOMAIN, async_platform_discovered)
 
-    async def async_clear_cache_handle(service):
+    async def async_clear_cache_handle(service: ServiceCall) -> None:
         """Handle clear cache service call."""
         await tts.async_clear_cache()
 
